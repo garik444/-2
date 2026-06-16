@@ -1,0 +1,58 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        try {
+            Connection con = DB.getConnection();
+
+            // LOGIN
+            System.out.print("Login: ");
+            String login = sc.nextLine();
+
+            System.out.print("Password: ");
+            String password = sc.nextLine();
+
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT * FROM users WHERE username=? AND password=?"
+            );
+
+            ps.setString(1, login);
+            ps.setString(2, password);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                System.out.println("Wrong login!");
+                return;
+            }
+
+            System.out.println("\n=== ADMIN PANEL ===\n");
+
+            // MANY TO MANY QUERY
+            Statement st = con.createStatement();
+
+            ResultSet data = st.executeQuery(
+                    "SELECT p.name, c.name " +
+                    "FROM product p " +
+                    "JOIN product_category pc ON p.id = pc.product_id " +
+                    "JOIN category c ON c.id = pc.category_id"
+            );
+
+            while (data.next()) {
+                System.out.println(
+                        data.getString(1) + " -> " + data.getString(2)
+                );
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
